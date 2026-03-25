@@ -54,7 +54,12 @@ PG_COLUMN_SCHEMA = (
 
 def extract(spark: SparkSession, csv_path: str) -> DataFrame:
     """Load the CSV dataset into a PySpark DataFrame with correct data types."""
-    return spark.read.csv(csv_path, header=True, inferSchema=True)
+    df = spark.read.csv(csv_path, header=True, inferSchema=True)
+    df = df.withColumn(
+        "sale_date",
+        F.date_format(F.to_date(F.col("sale_date"), "M/d/yy"), "yyyy-MM-dd"),
+    )
+    return df
 
 
 def transform(df: DataFrame) -> dict[str, DataFrame]:
