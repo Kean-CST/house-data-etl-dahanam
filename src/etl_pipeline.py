@@ -59,6 +59,9 @@ def extract(spark: SparkSession, csv_path: str) -> DataFrame:
         "sale_date",
         F.date_format(F.to_date(F.col("sale_date"), "M/d/yy"), "yyyy-MM-dd"),
     )
+    bool_cols = ["has_pool", "recently_renovated", "has_children", "first_time_buyer"]
+    for col in bool_cols:
+        df = df.withColumn(col, F.initcap(F.col(col).cast("string")))
     return df
 
 
