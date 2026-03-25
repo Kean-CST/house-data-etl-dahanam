@@ -64,7 +64,7 @@ def transform(df: DataFrame) -> dict[str, DataFrame]:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     partitions = {}
     for hood in NEIGHBORHOODS:
-        filtered = df.filter(df.neighborhood == hood)
+        filtered = df.filter(df.neighborhood == hood).orderBy("house_id")
         tmp_dir = OUTPUT_DIR / f"_tmp_{hood.replace(' ', '_').lower()}"
         filtered.coalesce(1).write.csv(str(tmp_dir), header=True, mode="overwrite")
         # Find the part file and move it to the expected path
