@@ -59,13 +59,18 @@ def extract(spark: SparkSession, csv_path: str) -> DataFrame:
 
 def transform(df: DataFrame) -> dict[str, DataFrame]:
     """Split the data by neighborhood and save each as a separate CSV file."""
+    import shutil
+
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     partitions = {}
     for hood in NEIGHBORHOODS:
         filtered = df.filter(df.neighborhood == hood)
-        filtered.coalesce(1).write.csv(
-            str(OUTPUT_FILES[hood]), header=True, mode="overwrite"
-        )
+        tmp_dir = OUTPUT_DIR / f"_tmp_{hood.replace(' ', '_').lower()}"
+        filtered.coalesce(1).write.csv(str(tmp_dir), header=True, mode="overwrite")
+        # Find the part file and move it to the expected path
+        part_file = next(tmp_dir.glob("part-*.csv"))
+        shutil.copy(str(part_file), str(OUTPUT_FILES[hood]))
+        shutil.rmtree(str(tmp_dir))
         partitions[hood] = filtered
     return partitions
 
